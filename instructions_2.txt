@@ -1,0 +1,37 @@
+Please optimise the app as instructed below.
+
+Code from paper to handle the data and visualize the data (figures):
+- code_paper.R
+
+Original data:
+- data/lr_pos_sem.csv
+
+General instructions:
+- Make the citation and author slightly more prominent.
+- Default to a grey default design of the main UI bar, as blue should only serve for semantically right words (as)
+- Remove the bar chart with the distribution for parties for now (bottom right plot)
+- Remove the context examples for now (bottom right indication)
+- One should be able to download all the plots invidually as .pngs with a button via ggplot2::ggsave() or a similar option
+- Find a sans serif font that matches Garamond slightly, maybe Helvetica?
+- the main title should be: "Mapping Left-Right Associations"
+- Think about (this is up to your judgement), whether out-ideology should be visually highlighted by a more transparent color and in-ideology by a less transparent color (always red and blue respectively)
+
+Update the main plot (also affecting the top right indication in the app with the word selection):
+- Remove the colors from the main figure (take inspiration from figure 5 and 6), in particular yellow and green should be removed
+- Add a dropdown menu in the top right where one can select a word (it should be the top 100, and it should be ordered by overall frequency), this should automatically select a word in the main plot
+- If one word is selected, it should be visually highlighted in the main plot (and the rest should be a bit more transparent in comparison)
+- Default should be all words (top 50 words) selected, one should be also be able to select how many of the top words by overall frequency are highlighted (ranging from 10 to 100, every integer from 10 to 100 should be selectable)
+- one should be able to select the aspect ratio, default should be 1:1, particularly for mobile views, this should be selectable next to the other options that already exist ("Show Labels" and "Show Reference Lines")
+
+Update the top right indication where the word is selected:
+- Let one decide whether it is English, German, or both (default is English only)
+- for German, make sure that the translation has the correct Umlaute (ü/ö/ä)
+- it should feature the overall frequency, as well as the frequency for left and right from lr_pos_sem.csv
+
+Update the distribution plot:
+- For semantically either left or right terms, only include one distribution (of the respective category)
+- Only have both distributions for semantically neutral terms
+- This information can be found in the column 'lr_semantic' in the data frame lr_pos_sem.csv
+
+
+

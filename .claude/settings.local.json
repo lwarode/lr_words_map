@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\LeoWe\\\\Desktop\\\\lukas_2\" -Recurse)",
+      "Bash(Select-Object FullName)",
+      "Bash(where Rscript)",
+      "Bash(\"/c/Program Files/R/R-4.4.1/bin/Rscript\" -e \"tryCatch\\({ source\\(''app.R'', local=TRUE\\); cat\\(''Syntax OK\\\\n''\\) }, error = function\\(e\\) cat\\(''Error:'', conditionMessage\\(e\\), ''\\\\n''\\)\\)\")",
+      "Bash(\"/c/Program Files/R/R-4.4.1/bin/Rscript\" -e \"\ntryCatch\\({\n  # Suppress startup messages\n  suppressPackageStartupMessages\\({\n    source\\(''R/generate_placeholder_data.R''\\)\n    source\\(''R/utils_data.R''\\)\n    source\\(''R/utils_plots.R''\\)\n    source\\(''R/mod_scatter_plot.R''\\)\n    source\\(''R/mod_word_details.R''\\)\n    source\\(''R/mod_context_viewer.R''\\)\n  }\\)\n  \n  # Test data generation\n  cat\\(''Testing placeholder data generation...\\\\n''\\)\n  data <- generate_all_placeholder_data\\(\\)\n  cat\\(''  Word associations:'', nrow\\(data$word_associations\\), ''rows\\\\n''\\)\n  cat\\(''  Position distributions:'', nrow\\(data$position_distributions\\), ''rows\\\\n''\\)\n  cat\\(''  Party usage:'', nrow\\(data$party_usage\\), ''rows\\\\n''\\)\n  cat\\(''  Context database:'', nrow\\(data$context_database\\), ''rows\\\\n''\\)\n  \n  cat\\(''\\\\nAll modules loaded successfully!\\\\n''\\)\n}, error = function\\(e\\) {\n  cat\\(''ERROR:'', conditionMessage\\(e\\), ''\\\\n''\\)\n}\\)\n\")",
+      "Bash(\"/c/Program Files/R/R-4.4.1/bin/Rscript\" -e \"parse\\(file=''app.R''\\); cat\\(''app.R: Syntax OK\\\\n''\\)\")",
+      "Bash(for f in R/*.R)",
+      "Bash(do \"/c/Program Files/R/R-4.4.1/bin/Rscript\" -e \"parse\\(file=''$f''\\); cat\\(''$f: OK\\\\n''\\)\")",
+      "Bash(echo:*)",
+      "Bash(done)"
+    ]
+  }
+}

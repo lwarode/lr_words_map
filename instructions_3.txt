@@ -1,0 +1,42 @@
+The result is very nice so far, thanks a lot. 
+I have a few corrections and adjustments that I propose in the following. 
+Some of the instructions are interconnected, so please make sure to interpret and execute them fully and holistically.
+
+General:
+- Fully move to Helvetica as the main font for all plots and remove all (EB) Garamond occurences 
+- Make sure that the visual plot aligns with the "back-end plot", there was e.g. a mismatch of the fonts when downloading the plot
+
+For the main plot visually:
+- Please add a slightly visible edge to the plot
+- The the inner grids should be a bit a more transparent
+- There should be no margin for the first and last grids (before 2 and 8) on the x-axis
+- The visual selection of the word bubble/dot (edge or frame around the word) should have less width and a bit more alpha 
+- Only have one geom_vline() and geom_hline() respectively, with the grey color. For geom_hline have y = 0 and for the geom_vline have the global mean of the left-right self-placement (x axis) as the value
+
+For the main plot conceptually:
+- Make sure (this is important!), that it is possible to click on a word after one has initially selected a word and that it affects the drop-down menu selection, this should also be the case the other way around of course
+- The top word selection should also feature the quadrant based top words (what I did in Figure 6 instead of Figure 5 in the paper)
+- One should be able to select the number of global top words (as it is done right now) and the number of qudrant based top words (default should be 10)
+- The main figure should display both global top words and quadrant based top words, but there should be no duplicates in the displayed data frame!
+- Make sure that the combination of global top words and quadrant based top words makes sense and causes no problems. You can ask me in the process of creating it.
+
+Top right word indication:
+- By default non-political or non-ideological stopwords such as "stands" (stehen) or "more" (mehr) should be removed from the selection. Please lookup those f
+- The dropdow word selection should also feature a search bar in the same UI element 
+- Make sure that the selection of English/German/Both also (see the screenshot attached) should be correct and also update the search barplot
+- Default should be "Both" 
+- The "Both" button should be replaced with only buttons for German and English were both are clicked as default (which should mean "both")
+- The options should also reactively update the search bar (English/German/Both words in the search bar and not only German!)
+- Make sure to replace the blue color at the left end with the grey color. 
+- All the 5 numbers displayed should be black, apart from left freq (which should be red) and right freq (which should be blue)
+
+Right distribution plot:
+- Add a little bit of space (not too much!) between the plot title and the distribution.
+- The plot title should have the same format as the other visuals – ENGLISH WORD (GERMAN WORD), no quotation marks 
+- Also include the annotated mean value for the semantically left and right words (the same as for the neutral words)
+- Be sure to display the correct distribution, as I did it in Figure 7 of the paper. Maybe ask me during the code update, how to approach this and show me the ggplot2 functions you are using here.
+
+General information and citation information: 
+- In the very top right, make sure that the paper icon is preceeded by a "Please cite:" which should also mention that if people use the figures they should cite the paper!
+- At the very bottom, below the the full citation and link add another paragraph where it is briefly (2-3 sentences) described how I generated the associations from the German candidate surveys (2013, 2017, 2021) using their open-ended survey responses and left-right self-placements. Look up the methods section of the paper for further details.
+- At the bottom right, remove the "Data: 6661 unique words" statement.

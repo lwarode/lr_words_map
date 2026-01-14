@@ -1,0 +1,481 @@
+/* ==============================================================================
+   Custom Styles for Left-Right Associations App
+   ============================================================================== */
+
+/* ------------------------------------------------------------------------------
+   CSS Variables (Google Colors)
+   ------------------------------------------------------------------------------ */
+
+:root {
+  /* Primary colors */
+  --google-blue: #4285F4;
+  --google-red: #EA4335;
+  --google-yellow: #FBBC05;
+  --google-green: #34A853;
+
+  /* Quadrant colors */
+  --in-left: #34A853;
+  --out-left: #FBBC05;
+  --in-right: #4285F4;
+  --out-right: #EA4335;
+  --center: #9E9E9E;
+
+  /* Neutrals */
+  --text-primary: #202124;
+  --text-secondary: #5F6368;
+  --text-muted: #9AA0A6;
+  --bg-light: #F8F9FA;
+  --bg-white: #FFFFFF;
+  --border-color: #E8EAED;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* ------------------------------------------------------------------------------
+   Base Styles
+   ------------------------------------------------------------------------------ */
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------------------------ */
+
+.main-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--google-blue) 0%, #1a73e8 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.app-header h1 {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.app-header .subtitle {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+/* ------------------------------------------------------------------------------
+   Cards
+   ------------------------------------------------------------------------------ */
+
+.card {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-white);
+  transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 500;
+  padding: 0.875rem 1rem;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+/* Word header card */
+.word-header-card {
+  border: none !important;
+  border-left: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Removed quadrant border colors - no longer used */
+
+/* ------------------------------------------------------------------------------
+   Scatter Plot Container
+   ------------------------------------------------------------------------------ */
+
+.scatter-plot-container {
+  background: var(--bg-white);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.plot-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plot-header h4 {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.plot-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.plot-controls .form-check {
+  margin-bottom: 0;
+}
+
+.plot-wrapper {
+  min-height: 500px;
+}
+
+.plot-legend {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+}
+
+/* ------------------------------------------------------------------------------
+   Word Details Panel
+   ------------------------------------------------------------------------------ */
+
+.word-details-container {
+  height: 100%;
+}
+
+.stat-value {
+  color: #333333;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ------------------------------------------------------------------------------
+   Context Viewer
+   ------------------------------------------------------------------------------ */
+
+.context-viewer-container .card {
+  height: 100%;
+}
+
+.context-item {
+  transition: background-color var(--transition-fast);
+}
+
+.context-item:hover {
+  background-color: var(--bg-light);
+}
+
+.context-item:last-child {
+  border-bottom: none !important;
+}
+
+.context-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.context-meta {
+  font-size: 0.8rem;
+}
+
+.context-list-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.context-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.context-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.context-list-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
+/* Highlighted word in context */
+.context-text mark,
+.context-text span[style*="background-color"] {
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------------------
+   Badges
+   ------------------------------------------------------------------------------ */
+
+.badge {
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  border-radius: 0.25rem;
+}
+
+.badge.bg-success {
+  background-color: var(--in-left) !important;
+}
+
+.badge.bg-warning {
+  background-color: var(--out-left) !important;
+}
+
+.badge.bg-primary {
+  background-color: var(--in-right) !important;
+}
+
+.badge.bg-danger {
+  background-color: var(--out-right) !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--center) !important;
+}
+
+/* Party badges with correct text color */
+.badge[style*="background-color: #FFED00"],
+.badge[style*="background-color: #FFEF00"] {
+  color: #333 !important;
+}
+
+/* ------------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------------ */
+
+.btn-primary {
+  background-color: var(--google-blue);
+  border-color: var(--google-blue);
+}
+
+.btn-primary:hover {
+  background-color: #1a73e8;
+  border-color: #1a73e8;
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bg-light);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------------------------
+   Loading Spinners
+   ------------------------------------------------------------------------------ */
+
+.shiny-spinner-output-container {
+  min-height: 200px;
+}
+
+/* ------------------------------------------------------------------------------
+   Tooltips (Plotly) - Force sans-serif on ALL elements
+   ------------------------------------------------------------------------------ */
+
+.plotly .hoverlayer .hovertext {
+  font-family: 'Roboto', Arial, Helvetica, sans-serif !important;
+}
+
+/* Force sans-serif on all plotly text elements */
+.plotly text,
+.plotly .gtitle,
+.plotly .xtitle,
+.plotly .ytitle,
+.plotly .xtick text,
+.plotly .ytick text,
+.plotly .legend text,
+.plotly .annotation text,
+.plotly .g-xtitle,
+.plotly .g-ytitle,
+.js-plotly-plot text,
+.js-plotly-plot .gtitle,
+.js-plotly-plot .xtitle,
+.js-plotly-plot .ytitle,
+.js-plotly-plot .xtick text,
+.js-plotly-plot .ytick text,
+.plot-container text,
+.svg-container text {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* ------------------------------------------------------------------------------
+   Responsive Adjustments
+   ------------------------------------------------------------------------------ */
+
+@media (max-width: 1200px) {
+  .app-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    padding: 0.5rem;
+  }
+
+  .app-header {
+    padding: 1rem;
+    border-radius: 0;
+    margin: -0.5rem -0.5rem 1rem -0.5rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .scatter-plot-container {
+    padding: 0.75rem;
+  }
+
+  .plot-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .plot-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+}
+
+/* ------------------------------------------------------------------------------
+   Animation Classes
+   ------------------------------------------------------------------------------ */
+
+.fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ------------------------------------------------------------------------------
+   Utility Classes
+   ------------------------------------------------------------------------------ */
+
+.text-google-blue {
+  color: var(--google-blue);
+}
+
+.text-google-red {
+  color: var(--google-red);
+}
+
+.text-google-yellow {
+  color: var(--google-yellow);
+}
+
+.text-google-green {
+  color: var(--google-green);
+}
+
+.bg-google-blue {
+  background-color: var(--google-blue);
+}
+
+.border-left-accent {
+  border-left: 3px solid #5F6368;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* ------------------------------------------------------------------------------
+   Print Styles
+   ------------------------------------------------------------------------------ */
+
+@media print {
+  .app-header {
+    background: none;
+    color: black;
+    box-shadow: none;
+    border-bottom: 2px solid black;
+  }
+
+  .btn, .form-check {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}

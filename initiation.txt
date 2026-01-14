@@ -1,0 +1,21 @@
+The Goal of this Project is creating a shiny-app, which visualizes the results of the paper in this Folder. It should commincate the results to interested audience (researchers and Policy makers, potential hiring persons from the economy).
+
+It should have the following capapbilites:
+
+1. Map the words associations in the two dimensions of figure 5. It should be able to click words from figure Five and when lcicke on them Display context Information. Below context Information:
+1.1 CIt should the Display the Distribution of the left-right Placement of the indiviudals that use the word. 
+1.2 It should have a barplot of the individuals that use the word.
+1.3 It should highlight the selected word from real policitcal Texts, from a context database. create a placeholder with 100 one to three sentence text from politicans. 
+
+Take visual inspirtaion from: https://lukas-warode.shinyapps.io/ParlGov_Dashboard/.
+
+Visuals:
+- Coloring scheme: rng Google Colors.
+- Reflect state of the art shiny coding and frontend
+
+Coding:
+- If you have suggestions for improved structure, better deployment, please outline them.
+- If you have Questions on how to proceed please ask.
+- It should be deployable on shiny-apps.io
+
+In this step, I dont want you to create code, but think About how to create a Readme.md which entails all components that have to be created by an agentic coding model. To do that, answer with eh Suggestion outline of that file, and after I give the code, write it. 
