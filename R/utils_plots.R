@@ -271,7 +271,10 @@ create_interactive_scatter <- function(ggplot_obj) {
     config(
       displayModeBar = TRUE,
       modeBarButtonsToRemove = c("lasso2d", "select2d"),
-      displaylogo = FALSE
+      displaylogo = FALSE,
+      # Mobile-friendly: scroll to zoom disabled, responsive sizing
+      scrollZoom = FALSE,
+      responsive = TRUE
     ) %>%
     event_register("plotly_click") %>%
     htmlwidgets::onRender("
@@ -289,6 +292,22 @@ create_interactive_scatter <- function(ggplot_obj) {
           });
         });
         observer.observe(el, {childList: true, subtree: true});
+        
+        // Mobile touch improvements: increase point size on touch devices
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+          // Set larger marker size for touch devices
+          var traces = el._fullData;
+          if (traces) {
+            traces.forEach(function(trace, i) {
+              if (trace.marker && trace.marker.size) {
+                // Increase size by 50% for touch
+                var currentSize = Array.isArray(trace.marker.size) ? trace.marker.size : [trace.marker.size];
+                var newSize = currentSize.map(function(s) { return Math.max(s * 1.3, 10); });
+                Plotly.restyle(el, {'marker.size': [newSize]}, [i]);
+              }
+            });
+          }
+        }
       }
     ")
 
@@ -604,32 +623,33 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
       linewidth = 2
     ) +
     scale_fill_identity() +
-    # Quadrant labels
+    # Quadrant labels - smaller text to fit inside boxes
     geom_text(
       aes(x = label_x, y = label_y, label = label, color = text_color),
-      size = 4,
+      size = 3.2,
       fontface = "bold",
       family = "sans",
-      lineheight = 0.9
+      lineheight = 0.85
     ) +
     scale_color_identity() +
     # Axis labels using annotate (Y-axis: Right at top, Left at bottom)
-    annotate("text", x = 0.5, y = -0.15, label = "Left", size = 3.5, family = "sans", color = "#5F6368") +
-    annotate("text", x = 1.5, y = -0.15, label = "Right", size = 3.5, family = "sans", color = "#5F6368") +
-    annotate("text", x = 1, y = -0.38, label = "Political Position", size = 3.8, family = "sans", fontface = "bold", color = "#5F6368") +
-    annotate("text", x = -0.15, y = 0.5, label = "Left", size = 3.5, family = "sans", color = "#5F6368", angle = 90) +
-    annotate("text", x = -0.15, y = 1.5, label = "Right", size = 3.5, family = "sans", color = "#5F6368", angle = 90) +
-    annotate("text", x = -0.42, y = 1, label = "Semantic\nAssociation", size = 3.8, family = "sans", fontface = "bold", color = "#5F6368", angle = 90, lineheight = 0.9) +
+    # Position labels closer to boxes - minimal padding
+    annotate("text", x = 0.5, y = -0.12, label = "Left", size = 2.8, family = "sans", color = "#5F6368") +
+    annotate("text", x = 1.5, y = -0.12, label = "Right", size = 2.8, family = "sans", color = "#5F6368") +
+    annotate("text", x = 1, y = -0.30, label = "Political Position", size = 3, family = "sans", fontface = "bold", color = "#5F6368") +
+    annotate("text", x = -0.12, y = 0.5, label = "Left", size = 2.8, family = "sans", color = "#5F6368", angle = 90) +
+    annotate("text", x = -0.12, y = 1.5, label = "Right", size = 2.8, family = "sans", color = "#5F6368", angle = 90) +
+    annotate("text", x = -0.30, y = 1, label = "Semantic\nAssociation", size = 3, family = "sans", fontface = "bold", color = "#5F6368", angle = 90, lineheight = 0.85) +
     # Reference lines (center cross) using annotate
     annotate("segment", x = 0, xend = 2, y = 1, yend = 1, color = "white", linewidth = 1.5) +
     annotate("segment", x = 1, xend = 1, y = 0, yend = 2, color = "white", linewidth = 1.5) +
-    # Theme and coordinates - use coord_cartesian to allow flexible aspect ratio
-    coord_cartesian(xlim = c(-0.55, 2.05), ylim = c(-0.65, 2.05), clip = "off") +
+    # Theme and coordinates - tight bounds, shifted slightly left
+    coord_cartesian(xlim = c(-0.45, 2.15), ylim = c(-0.45, 2.05), clip = "off") +
     theme_void() +
     theme(
       plot.background = element_rect(fill = "white", color = NA),
       panel.background = element_rect(fill = "white", color = NA),
-      plot.margin = margin(5, 10, 30, 45)
+      plot.margin = margin(2, 15, 2, 2)  # More right margin to push content left
     )
   
   # Add "NEUTRAL" indicator if neutral word (bold and prominent)
@@ -643,9 +663,9 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
   # Add warning for positionally ambiguous cases
   if (is_ambiguous && !no_selection) {
     p <- p +
-      annotate("text", x = 1, y = -0.62, 
-               label = "Position near center - classification ambiguous",
-               size = 3.3, family = "sans", fontface = "italic", color = "#B45309")
+      annotate("text", x = 1, y = -0.42, 
+               label = "Position near center - ambiguous",
+               size = 2.5, family = "sans", fontface = "italic", color = "#B45309")
   }
   
   return(p)

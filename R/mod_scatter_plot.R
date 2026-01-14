@@ -30,73 +30,76 @@ scatterPlotUI <- function(id) {
       div(
         class = "plot-header mb-3",
         
-        # Row 1: Title and word selector
+        # Row 1: Title
         div(
-          class = "d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2",
-          h4("Word Associations in Left-Right Space", class = "mb-0"),
+          class = "mb-2",
+          h4("Word Associations in Left-Right Space", class = "mb-0")
+        ),
+        
+        # Row 2: Word selector and Clear (mobile-friendly row)
+        div(
+          class = "d-flex align-items-center gap-2 mb-2 word-selector-row",
           div(
-            class = "d-flex align-items-center gap-2",
+            class = "flex-grow-1",
             # Word selector dropdown - searchable
             selectizeInput(
               ns("select_word"),
               label = NULL,
               choices = NULL,  # Will be populated by server
               selected = NULL,
-              width = "280px",
+              width = "100%",
               options = list(
                 placeholder = "Select a word...",
                 create = FALSE
               )
-            ),
-            # Clear selection link
-            actionLink(
-              ns("clear_word"),
-              label = "Clear",
-              style = "font-size: 0.85rem; color: #5F6368;"
             )
+          ),
+          # Clear selection link
+          actionLink(
+            ns("clear_word"),
+            label = "Clear",
+            class = "clear-btn",
+            style = "font-size: 0.9rem; color: #5F6368; white-space: nowrap; padding: 0.5rem;"
           )
         ),
         
-        # Row 2: Controls
+        # Row 3: Top N controls (all in one line)
+        div(
+          class = "d-flex align-items-center gap-1 mb-2 topn-controls-row",
+          style = "flex-wrap: nowrap;",
+          tags$label("Show top", class = "mb-0 small"),
+          selectInput(
+            ns("top_n_global"),
+            label = NULL,
+            choices = c("10", "20", "30", "50", "75", "100"),
+            selected = "50",
+            width = "75px"
+          ),
+          tags$label("overall +", class = "mb-0 small", style = "white-space: nowrap;"),
+          selectInput(
+            ns("top_n_quadrant"),
+            label = NULL,
+            choices = c("5", "10", "15", "20"),
+            selected = "10",
+            width = "75px"
+          ),
+          tags$label("per quadrant", class = "mb-0 small", style = "white-space: nowrap;")
+        ),
+        
+        # Row 4: Other controls and download
         div(
           class = "d-flex justify-content-between align-items-center flex-wrap gap-2",
           div(
             class = "d-flex align-items-center gap-3 flex-wrap",
-            # Top N words selector (global)
+            # Aspect ratio selector (hidden on small mobile via CSS)
             div(
-              class = "d-flex align-items-center gap-1",
-              tags$label("Show top", class = "mb-0 small"),
-              selectInput(
-                ns("top_n_global"),
-                label = NULL,
-                choices = c("10", "20", "30", "50", "75", "100"),
-                selected = "50",
-                width = "70px"
-              ),
-              tags$label("overall", class = "mb-0 small")
-            ),
-            # Top N per quadrant selector
-            div(
-              class = "d-flex align-items-center gap-1",
-              tags$label("+", class = "mb-0 small"),
-              selectInput(
-                ns("top_n_quadrant"),
-                label = NULL,
-                choices = c("5", "10", "15", "20"),
-                selected = "10",
-                width = "60px"
-              ),
-              tags$label("per quadrant", class = "mb-0 small")
-            ),
-            # Aspect ratio selector
-            div(
-              class = "d-flex align-items-center gap-1",
+              class = "d-flex align-items-center gap-1 aspect-ratio-control",
               tags$label("Aspect:", class = "mb-0 small"),
               selectInput(
                 ns("aspect_ratio"),
                 label = NULL,
-                choices = c("1:1" = "1", "4:3" = "0.75", "16:9" = "0.5625"),
-                selected = "1",
+                choices = c("Auto" = "auto", "1:1" = "1", "4:3" = "0.75", "16:9" = "0.5625"),
+                selected = "auto",
                 width = "80px"
               )
             ),
@@ -118,10 +121,10 @@ scatterPlotUI <- function(id) {
         )
       ),
 
-      # Main plot
+      # Main plot - height controlled by CSS for mobile responsiveness
       div(
         class = "plot-wrapper",
-        add_spinner(plotlyOutput(ns("scatter_plot"), height = "600px"), type = 6, color = "#5F6368")
+        add_spinner(plotlyOutput(ns("scatter_plot"), height = "auto"), type = 6, color = "#5F6368")
       ),
 
       # Legend/info below plot
@@ -264,6 +267,15 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
     # Reactive: Create the ggplot object
     scatter_ggplot <- reactive({
       req(data())
+      
+      # Handle "auto" aspect ratio - pass NULL to skip coord_fixed
+      # This lets plotly fill the available space naturally
+      aspect <- input$aspect_ratio
+      if (is.null(aspect) || aspect == "auto") {
+        aspect_val <- NULL  # No fixed aspect ratio - plotly fills container
+      } else {
+        aspect_val <- as.numeric(aspect)
+      }
 
       create_scatter_plot(
         data = data(),
@@ -273,7 +285,7 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
         top_n_global = as.integer(input$top_n_global),
         top_n_quadrant = as.integer(input$top_n_quadrant),
         highlighted_words = current_selection(),
-        aspect_ratio = as.numeric(input$aspect_ratio)
+        aspect_ratio = aspect_val
       )
     })
 
@@ -301,6 +313,14 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
         paste0("lr_associations_", Sys.Date(), ".png")
       },
       content = function(file) {
+        # Handle "auto" aspect ratio for download
+        aspect <- input$aspect_ratio
+        if (is.null(aspect) || aspect == "auto") {
+          aspect_val <- 1
+        } else {
+          aspect_val <- as.numeric(aspect)
+        }
+        
         # Create static ggplot for download
         p <- create_scatter_plot(
           data = data(),
@@ -310,14 +330,14 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
           top_n_global = as.integer(input$top_n_global),
           top_n_quadrant = as.integer(input$top_n_quadrant),
           highlighted_words = current_selection(),
-          aspect_ratio = as.numeric(input$aspect_ratio)
+          aspect_ratio = aspect_val
         )
         
         ggsave(
           file, 
           plot = p, 
           width = 9, 
-          height = 9 * as.numeric(input$aspect_ratio), 
+          height = 9 * aspect_val, 
           dpi = 300,
           bg = "white"
         )

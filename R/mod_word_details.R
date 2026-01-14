@@ -59,8 +59,12 @@ wordDetailsUI <- function(id) {
         tags$h6("Framework", style = "margin: 0; font-weight: 500;")
       ),
       div(
+        class = "text-center",
         style = "padding: 0.75rem;",
-        plotOutput(ns("quadrant_diagram"), height = "260px")
+        div(
+          style = "display: inline-block; width: 100%; max-width: 350px;",
+          plotOutput(ns("quadrant_diagram"), height = "280px", width = "100%")
+        )
       ),
       div(
         style = "padding: 0.75rem 1rem; border-top: 1px solid #E8EAED;",

@@ -157,6 +157,12 @@ h1, h2, h3, h4, h5, h6 {
   min-height: 500px;
 }
 
+/* Plotly container needs explicit height when set to auto */
+.plot-wrapper .plotly,
+.plot-wrapper .js-plotly-plot {
+  height: 600px;
+}
+
 .plot-legend {
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -368,6 +374,17 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1.25rem;
   }
 
+  /* Header row stacks vertically on mobile */
+  .app-header .row {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .app-header .text-md-end {
+    text-align: center !important;
+    margin-top: 0.75rem;
+  }
+
   .scatter-plot-container {
     padding: 0.75rem;
   }
@@ -382,6 +399,170 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 0.5rem;
+  }
+
+  /* Word selector row - full width with Clear aligned right */
+  .word-selector-row {
+    width: 100%;
+  }
+
+  .word-selector-row .flex-grow-1 {
+    min-width: 0;
+  }
+
+  .word-selector-row .selectize-control {
+    width: 100% !important;
+  }
+
+  /* Clear button styling */
+  .clear-btn {
+    flex-shrink: 0;
+  }
+
+  /* Top N controls row - keep elements together */
+  .topn-controls-row {
+    width: 100%;
+  }
+
+  .topn-controls-row > div {
+    flex-wrap: nowrap !important;
+  }
+
+  /* Force equal width for both select inputs in top N row */
+  .topn-controls-row .form-select {
+    width: 75px !important;
+    min-width: 75px !important;
+    flex-shrink: 0;
+  }
+
+  /* Plot uses more of the viewport height on mobile */
+  .plot-wrapper {
+    min-height: 60vh;
+  }
+
+  .plot-wrapper .plotly,
+  .plot-wrapper .js-plotly-plot {
+    height: 65vh !important;
+    min-height: 450px;
+  }
+
+  /* Word selector full width on mobile */
+  .plot-header .selectize-control,
+  .plot-header .selectize-input {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Control rows stack better */
+  .plot-header .d-flex {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  /* Legend stacks vertically */
+  .plot-legend .row {
+    flex-direction: column;
+  }
+
+  .plot-legend .col-md-4 {
+    text-align: left !important;
+    margin-top: 0.5rem;
+  }
+
+  /* Increase touch target sizes */
+  .btn, 
+  .form-select,
+  .form-control {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  /* Larger select dropdowns */
+  .form-select {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+  }
+
+  /* Clear button larger touch target */
+  .plot-header a[id$="clear_word"] {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Top N controls stay on same line */
+  .top-n-control {
+    flex-wrap: wrap;
+  }
+
+  /* Hide aspect ratio on small screens - auto is default */
+  .aspect-ratio-control {
+    display: none !important;
+  }
+
+  /* Details panel improvements */
+  .word-details-panel {
+    margin-top: 1rem;
+  }
+
+  /* Stats grid more compact */
+  .stat-card {
+    padding: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Footer citation more compact */
+  .border-top {
+    padding: 0.75rem !important;
+  }
+
+  .border-top p {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ------------------------------------------------------------------------------
+   Small Mobile (< 480px) - Extra adjustments
+   ------------------------------------------------------------------------------ */
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .app-header .subtitle {
+    font-size: 0.85rem;
+  }
+
+  /* Hide less essential controls on very small screens */
+  .plot-header label.small {
+    font-size: 0.75rem;
+  }
+
+  /* Aspect ratio selector hidden on mobile - force 1:1 via CSS */
+  [id$="aspect_ratio"] {
+    display: none;
+  }
+  [id$="aspect_ratio"] + label,
+  label:has(+ [id$="aspect_ratio"]) {
+    display: none;
+  }
+
+  /* Make controls wrap nicely */
+  .d-flex.align-items-center.gap-3 {
+    gap: 0.5rem !important;
+  }
+
+  /* Plot takes more vertical space */
+  .plot-wrapper {
+    min-height: 400px;
+  }
+
+  /* Download button smaller */
+  .btn-outline-secondary {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
   }
 }
 
