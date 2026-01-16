@@ -50,7 +50,8 @@ scatterPlotUI <- function(id) {
               width = "100%",
               options = list(
                 placeholder = "Select a word...",
-                create = FALSE
+                create = FALSE,
+                maxOptions = 250  # Show all curated words (~229)
               )
             )
           ),
@@ -68,6 +69,7 @@ scatterPlotUI <- function(id) {
           class = "d-flex align-items-center gap-1 mb-2 topn-controls-row",
           style = "flex-wrap: nowrap;",
           tags$label("Show top", class = "mb-0 small"),
+
           selectInput(
             ns("top_n_global"),
             label = NULL,
@@ -79,8 +81,8 @@ scatterPlotUI <- function(id) {
           selectInput(
             ns("top_n_quadrant"),
             label = NULL,
-            choices = c("5", "10", "15", "20"),
-            selected = "10",
+            choices = c("5", "10", "15", "20", "25", "30"),
+            selected = "20",
             width = "75px"
           ),
           tags$label("per quadrant", class = "mb-0 small", style = "white-space: nowrap;")
@@ -114,17 +116,17 @@ scatterPlotUI <- function(id) {
           div(
             downloadButton(
               ns("download_plot"),
-              "PNG",
+              "Download Figure",
               class = "btn btn-sm btn-outline-secondary"
             )
           )
         )
       ),
 
-      # Main plot - height controlled by CSS for mobile responsiveness
+      # Main plot - fixed height prevents resize flash on re-render
       div(
         class = "plot-wrapper",
-        add_spinner(plotlyOutput(ns("scatter_plot"), height = "auto"), type = 6, color = "#5F6368")
+        add_spinner(plotlyOutput(ns("scatter_plot"), height = "550px"), type = 6, color = "#5F6368")
       ),
 
       # Legend/info below plot
@@ -175,9 +177,11 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
     # Update word dropdown choices when data loads
     observe({
       req(data())
-      
+
       # Get top words by frequency (ordered by frequency, not alphabetically)
+      # Exclude "recht" as it's too generic (means "right" in English)
       top_words_df <- data()$word_associations %>%
+        filter(word != "recht") %>%
         arrange(desc(frequency)) %>%
         slice_head(n = 500)
       
@@ -267,7 +271,7 @@ scatterPlotServer <- function(id, data, selected_word = reactive(NULL)) {
     # Reactive: Create the ggplot object
     scatter_ggplot <- reactive({
       req(data())
-      
+
       # Handle "auto" aspect ratio - pass NULL to skip coord_fixed
       # This lets plotly fill the available space naturally
       aspect <- input$aspect_ratio

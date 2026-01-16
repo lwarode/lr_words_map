@@ -640,6 +640,56 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ------------------------------------------------------------------------------
+   User Guide Collapsible (Mobile)
+   ------------------------------------------------------------------------------ */
+
+.user-guide-header {
+  transition: background-color var(--transition-fast);
+}
+
+.user-guide-header:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.user-guide-header:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Rotate chevron when expanded */
+.user-guide-header[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+}
+
+.user-guide-header .bi-chevron-down {
+  transition: transform var(--transition-fast);
+}
+
+/* Smooth collapse animation */
+#userGuideContent {
+  transition: height 0.2s ease-out;
+}
+
+/* ------------------------------------------------------------------------------
+   Desktop Improvements
+   ------------------------------------------------------------------------------ */
+
+/* Prevent ultra-wide layouts on large monitors */
+@media (min-width: 1800px) {
+  .main-container {
+    max-width: 1700px;
+  }
+
+  /* Slightly larger fonts on big screens */
+  .scatter-plot-container {
+    font-size: 1.05rem;
+  }
+
+  .plot-header h4 {
+    font-size: 1.2rem;
+  }
+}
+
+/* ------------------------------------------------------------------------------
    Print Styles
    ------------------------------------------------------------------------------ */
 

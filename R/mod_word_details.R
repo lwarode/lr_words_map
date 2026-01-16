@@ -41,7 +41,7 @@ wordDetailsUI <- function(id) {
         tags$h6("Position Distribution", style = "margin: 0; font-weight: 500;"),
         downloadButton(
           ns("download_dist"),
-          "PNG",
+          "Download Figure",
           class = "btn btn-sm btn-outline-secondary"
         )
       ),

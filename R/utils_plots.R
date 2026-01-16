@@ -1,3 +1,136 @@
+#' Create interactive scatter plot directly with plotly (no ggplotly)
+#' Used for main app to avoid blank space/resizing issues
+create_plotly_scatter_plot <- function(data,
+                                       selected_word = NULL,
+                                       show_reference_lines = TRUE,
+                                       top_n_global = 50,
+                                       top_n_quadrant = 10,
+                                       highlighted_words = NULL) {
+  word_data <- data$word_associations
+  global_stats <- data$global_stats
+
+  # Get global top words by frequency
+  global_top_words <- word_data %>%
+    arrange(desc(frequency)) %>%
+    slice_head(n = top_n_global) %>%
+    pull(word)
+
+  # Get quadrant-based top words
+  quadrant_top_words <- c()
+  if (top_n_quadrant > 0) {
+    in_left <- word_data %>% filter(lr_semantic == "left", lr_position_mean < global_stats$lr_position_mean) %>% arrange(desc(frequency)) %>% slice_head(n = top_n_quadrant) %>% pull(word)
+    out_left <- word_data %>% filter(lr_semantic == "left", lr_position_mean >= global_stats$lr_position_mean) %>% arrange(desc(frequency)) %>% slice_head(n = top_n_quadrant) %>% pull(word)
+    in_right <- word_data %>% filter(lr_semantic == "right", lr_position_mean >= global_stats$lr_position_mean) %>% arrange(desc(frequency)) %>% slice_head(n = top_n_quadrant) %>% pull(word)
+    out_right <- word_data %>% filter(lr_semantic == "right", lr_position_mean < global_stats$lr_position_mean) %>% arrange(desc(frequency)) %>% slice_head(n = top_n_quadrant) %>% pull(word)
+    quadrant_top_words <- c(in_left, out_left, in_right, out_right)
+  }
+  all_top_words <- unique(c(global_top_words, quadrant_top_words))
+  if (!is.null(highlighted_words) && length(highlighted_words) > 0) {
+    all_top_words <- unique(c(all_top_words, highlighted_words))
+  }
+  word_data <- word_data %>% filter(word %in% all_top_words)
+
+  # Alpha for highlight
+  word_data <- word_data %>% mutate(
+    is_highlighted = if (!is.null(highlighted_words)) word %in% highlighted_words else TRUE,
+    point_alpha = ifelse(is_highlighted, 0.75, 0.15)
+  )
+
+  # Tooltip - use HTML encoding to preserve German umlauts
+  word_data <- word_data %>% mutate(
+    tooltip = paste0(
+      "<b>", htmltools::htmlEscape(word_en), " (", htmltools::htmlEscape(word), ")</b><br>",
+      "Self-Placement: ", round(lr_position_mean, 2), "<br>",
+      "Semantic Score: ", round(semantic_score, 2), "<br>",
+      "Frequency: ", frequency
+    )
+  )
+
+  # Main scatter - source must match what's used in event_data()
+  p <- plot_ly(
+    data = word_data,
+    x = ~lr_position_mean,
+    y = ~semantic_score,
+    type = 'scatter',
+    mode = 'markers',
+    color = ~lr_semantic,
+    colors = SEMANTIC_COLORS,
+    marker = list(
+      size = ~scales::rescale(frequency, to = c(8, 24)),
+      opacity = ~point_alpha,
+      line = list(width = 0)
+    ),
+    text = ~tooltip,
+    hoverinfo = 'text',
+    customdata = ~word,
+    showlegend = FALSE,
+    width = NULL,
+    source = "scatter_plot"
+  )
+
+  # Reference lines
+  if (show_reference_lines) {
+    p <- p %>%
+      add_lines(x = c(2, 8), y = c(0, 0), line = list(dash = 'dash', color = 'grey'), inherit = FALSE, showlegend = FALSE) %>%
+      add_lines(x = rep(global_stats$lr_position_mean, 2), y = c(-1.1, 1.1), line = list(dash = 'dash', color = 'grey'), inherit = FALSE, showlegend = FALSE)
+  }
+
+  # Highlight selected word with a black ring
+  if (!is.null(selected_word) && selected_word %in% word_data$word) {
+    sel <- word_data %>% filter(word == selected_word)
+    p <- p %>%
+      add_trace(
+        data = sel,
+        x = ~lr_position_mean,
+        y = ~semantic_score,
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(
+          size = 32,
+          color = 'rgba(0,0,0,0)',
+          line = list(width = 3, color = '#000'),
+          opacity = 0.6
+        ),
+        hoverinfo = 'none',
+        showlegend = FALSE,
+        inherit = FALSE
+      )
+  }
+
+  # Layout
+  p <- p %>% layout(
+    xaxis = list(
+      title = "Left-Right Self-Placement (Mean)",
+      range = c(2, 8),
+      zeroline = FALSE,
+      fixedrange = TRUE
+    ),
+    yaxis = list(
+      title = "Left-Right Semantic Association Score (Left: -1, Right: +1)",
+      range = c(-1.1, 1.1),
+      zeroline = FALSE,
+      fixedrange = TRUE
+    ),
+    margin = list(l = 60, r = 20, t = 20, b = 60, pad = 0),
+    height = NULL,
+    width = NULL,
+    dragmode = 'zoom',
+    hovermode = 'closest',
+    font = list(family = "Arial, Helvetica, sans-serif", size = 12)
+  )
+
+  p <- p %>% config(
+    displayModeBar = TRUE,
+    modeBarButtonsToRemove = c("lasso2d", "select2d"),
+    displaylogo = FALSE,
+    scrollZoom = FALSE,
+    responsive = FALSE
+  ) %>%
+    event_register("plotly_click")
+
+  p
+}
+
 # ==============================================================================
 # Plotting Utilities for Left-Right Associations App
 # ==============================================================================
@@ -234,9 +367,13 @@ create_scatter_plot <- function(data,
     }
   }
   
-  # Set aspect ratio
+  # Set aspect ratio for downloads, or use coord_cartesian for interactive
   if (!is.null(aspect_ratio)) {
-    p <- p + coord_fixed(ratio = aspect_ratio * (6 / 2.2))
+    p <- p + coord_fixed(ratio = aspect_ratio * (6 / 2.2), xlim = c(2, 8), ylim = c(-1.1, 1.1))
+  } else {
+    # For interactive (plotly), use coord_cartesian with fixed limits
+    # This prevents the plot from resizing when highlighting changes
+    p <- p + coord_cartesian(xlim = c(2, 8), ylim = c(-1.1, 1.1), expand = FALSE)
   }
 
   return(p)
@@ -254,12 +391,19 @@ create_interactive_scatter <- function(ggplot_obj) {
       clickmode = "event",
       hovermode = "closest",
       showlegend = FALSE,
+      autosize = TRUE,
       font = list(family = "Arial, Helvetica, sans-serif", size = 12),
       xaxis = list(
+        range = c(2, 8),
+        autorange = FALSE,
+        fixedrange = FALSE,
         tickfont = list(family = "Arial, Helvetica, sans-serif", size = 11),
         titlefont = list(family = "Arial, Helvetica, sans-serif", size = 12)
       ),
       yaxis = list(
+        range = c(-1.1, 1.1),
+        autorange = FALSE,
+        fixedrange = FALSE,
         tickfont = list(family = "Arial, Helvetica, sans-serif", size = 11),
         titlefont = list(family = "Arial, Helvetica, sans-serif", size = 12)
       ),
@@ -292,10 +436,10 @@ create_interactive_scatter <- function(ggplot_obj) {
           });
         });
         observer.observe(el, {childList: true, subtree: true});
-        
+
         // Mobile touch improvements: increase point size on touch devices
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-          // Set larger marker size for touch devices
+          // Set larger marker size for touch
           var traces = el._fullData;
           if (traces) {
             traces.forEach(function(trace, i) {
@@ -308,6 +452,11 @@ create_interactive_scatter <- function(ggplot_obj) {
             });
           }
         }
+
+        // Trigger resize after render to fill container properly
+        setTimeout(function() {
+          Plotly.Plots.resize(el);
+        }, 100);
       }
     ")
 
@@ -643,6 +792,13 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
     # Reference lines (center cross) using annotate
     annotate("segment", x = 0, xend = 2, y = 1, yend = 1, color = "white", linewidth = 1.5) +
     annotate("segment", x = 1, xend = 1, y = 0, yend = 2, color = "white", linewidth = 1.5) +
+    # In-ideology (+) and Out-ideology (-) indicators in quadrant corners
+    # In-ideology: bottom-left (left) and top-right (right) = positive alignment
+    annotate("text", x = 0.12, y = 0.12, label = "+", size = 4, family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 1.88, y = 1.88, label = "+", size = 4, family = "sans", fontface = "bold", color = "#666666") +
+    # Out-ideology: top-left (right semantic, left position) and bottom-right (left semantic, right position) = negative framing
+    annotate("text", x = 0.12, y = 1.88, label = "\u2212", size = 4, family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 1.88, y = 0.12, label = "\u2212", size = 4, family = "sans", fontface = "bold", color = "#666666") +
     # Theme and coordinates - tight bounds, shifted slightly left
     coord_cartesian(xlim = c(-0.45, 2.15), ylim = c(-0.45, 2.05), clip = "off") +
     theme_void() +
@@ -663,9 +819,9 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
   # Add warning for positionally ambiguous cases
   if (is_ambiguous && !no_selection) {
     p <- p +
-      annotate("text", x = 1, y = -0.42, 
-               label = "Position near center - ambiguous",
-               size = 2.5, family = "sans", fontface = "italic", color = "#B45309")
+      annotate("text", x = 1, y = -0.50,
+               label = "Position near center \u2013 ambiguous",
+               size = 3.2, family = "sans", fontface = "italic", color = "#B45309")
   }
   
   return(p)
