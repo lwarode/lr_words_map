@@ -10,8 +10,14 @@
 # Configuration
 # ------------------------------------------------------------------------------
 
+# Set UTF-8 locale for proper German umlaut handling
+Sys.setlocale("LC_ALL", "en_US.UTF-8")
+
 # Set to TRUE when real data files are available in the data/ folder
 USE_REAL_DATA <- TRUE
+
+# Debug mode - set to FALSE for production deployment
+DEBUG_MODE <- FALSE
 
 # ------------------------------------------------------------------------------
 # Load Packages
@@ -59,7 +65,7 @@ source("R/mod_word_details.R")
 # Load data at startup (either real or placeholder)
 app_data <- load_app_data(use_real_data = USE_REAL_DATA)
 
-message(paste("Loaded", nrow(app_data$word_associations), "word associations"))
+if (DEBUG_MODE) message(paste("Loaded", nrow(app_data$word_associations), "word associations"))
 
 # ------------------------------------------------------------------------------
 # UI Definition
@@ -98,13 +104,19 @@ ui <- page_fluid(
    ),
    # Favicon (optional)
    tags$link(rel = "icon", type = "image/x-icon", href = "favicon.ico"),
-   # JavaScript for clearing selectize
+   # JavaScript for clearing selectize and user guide toggle
    tags$script(HTML("
      Shiny.addCustomMessageHandler('clearSelectize', function(message) {
        var selectize = $('#' + message.id)[0];
        if (selectize && selectize.selectize) {
          selectize.selectize.clear();
        }
+     });
+
+     // Toggle aria-expanded on user guide header click
+     $(document).on('click', '.user-guide-header', function() {
+       var expanded = $(this).attr('aria-expanded') === 'true';
+       $(this).attr('aria-expanded', !expanded);
      });
    "))
  ),
@@ -147,6 +159,54 @@ ui <- page_fluid(
              )
            )
          )
+       )
+     )
+   ),
+
+   # User Guide - Collapsible on mobile, always visible on desktop
+   div(
+     class = "user-guide",
+     style = "background-color: #f8f9fa; margin-bottom: 1rem; border-radius: 6px; border-left: 4px solid #5F6368;",
+     # Mobile: clickable header to toggle
+     div(
+       class = "user-guide-header d-lg-none",
+       style = "padding: 0.75rem 1rem; cursor: pointer;",
+       `data-bs-toggle` = "collapse",
+       `data-bs-target` = "#userGuideContent",
+       `aria-expanded` = "false",
+       div(
+         class = "d-flex justify-content-between align-items-center",
+         tags$span(style = "font-size: 0.9rem; font-weight: 500; color: #424242;", "About this visualization"),
+         tags$i(class = "bi bi-chevron-down", style = "color: #5F6368;")
+       )
+     ),
+     # Desktop: always visible header text (no toggle)
+     div(
+       class = "d-none d-lg-block",
+       style = "padding: 0.75rem 1rem;",
+       tags$p(
+         class = "mb-0",
+         style = "font-size: 0.9rem; color: #424242; line-height: 1.5;",
+         HTML(paste0(
+           "This visualization maps how political words are associated with 'left' and 'right' based on open-ended survey responses from German electoral candidates (2013\u20132021). ",
+           "Each point represents a <strong>word association</strong>, not an individual person \u2013 positioned by the average left-right self-placement of respondents who mentioned it. ",
+           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations."
+         ))
+       )
+     ),
+     # Mobile: collapsible content
+     div(
+       id = "userGuideContent",
+       class = "collapse d-lg-none",
+       style = "padding: 0 1rem 0.75rem 1rem;",
+       tags$p(
+         class = "mb-0",
+         style = "font-size: 0.9rem; color: #424242; line-height: 1.5;",
+         HTML(paste0(
+           "This visualization maps how political words are associated with 'left' and 'right' based on open-ended survey responses from German electoral candidates (2013\u20132021). ",
+           "Each point represents a <strong>word association</strong>, not an individual person \u2013 positioned by the average left-right self-placement of respondents who mentioned it. ",
+           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations."
+         ))
        )
      )
    ),
@@ -257,12 +317,14 @@ server <- function(input, output, session) {
    }
  }, ignoreInit = TRUE, ignoreNULL = FALSE)
 
- # Debug: Log selected word changes
- observeEvent(selected_word(), {
-   if (!is.null(selected_word())) {
-     message(paste("Selected word:", selected_word()))
-   }
- })
+ # Debug: Log selected word changes (only in debug mode)
+ if (DEBUG_MODE) {
+   observeEvent(selected_word(), {
+     if (!is.null(selected_word())) {
+       message(paste("Selected word:", selected_word()))
+     }
+   })
+ }
 }
 
 # ------------------------------------------------------------------------------

@@ -2,11 +2,12 @@
 # Data Utilities for Left-Right Associations App
 # ==============================================================================
 # Functions for loading, processing, and transforming data.
-# Loads lr_pos_sem.csv as primary data source.
+# Loads lr_pos_sem_curated.csv as primary data source (curated 229 words).
 # ==============================================================================
 
 library(dplyr)
 library(readr)
+library(htmltools)
 
 # ------------------------------------------------------------------------------
 # Configuration
@@ -15,17 +16,20 @@ library(readr)
 # Data directory path
 DATA_DIR <- "data"
 
+# Use curated data (229 words) vs full data (6892 words)
+USE_CURATED_DATA <- TRUE
+
 # ------------------------------------------------------------------------------
 # Main Data Loading Function
 # ------------------------------------------------------------------------------
 
-load_app_data <- function(use_real_data = TRUE, data_dir = DATA_DIR) {
+load_app_data <- function(use_real_data = TRUE, data_dir = DATA_DIR, verbose = FALSE) {
 
  if (use_real_data) {
-   message("Loading real data from lr_pos_sem.csv...")
-   data <- load_real_data(data_dir)
+   if (verbose) message("Loading real data from curated files...")
+   data <- load_real_data(data_dir, verbose = verbose)
  } else {
-   message("Generating placeholder data...")
+   if (verbose) message("Generating placeholder data...")
    source("R/generate_placeholder_data.R", local = TRUE)
    data <- generate_all_placeholder_data(save_to_disk = FALSE)
  }
@@ -37,20 +41,30 @@ load_app_data <- function(use_real_data = TRUE, data_dir = DATA_DIR) {
 }
 
 # ------------------------------------------------------------------------------
-# Load Real Data from lr_pos_sem.csv
+# Load Real Data from lr_pos_sem_curated.csv
 # ------------------------------------------------------------------------------
 
-load_real_data <- function(data_dir = DATA_DIR) {
+load_real_data <- function(data_dir = DATA_DIR, verbose = FALSE) {
 
- # Primary data file
- lr_pos_sem_file <- file.path(data_dir, "lr_pos_sem.csv")
+ # Primary data file - use curated version
+ if (USE_CURATED_DATA) {
+   lr_pos_sem_file <- file.path(data_dir, "lr_pos_sem_curated.csv")
+   df_exp_left_file <- file.path(data_dir, "df_exp_left_curated.csv")
+   df_exp_right_file <- file.path(data_dir, "df_exp_right_curated.csv")
+   if (verbose) message("Using CURATED data (229 words)")
+ } else {
+   lr_pos_sem_file <- file.path(data_dir, "lr_pos_sem.csv")
+   df_exp_left_file <- file.path(data_dir, "df_exp_left.csv")
+   df_exp_right_file <- file.path(data_dir, "df_exp_right.csv")
+   if (verbose) message("Using FULL data (6892 words)")
+ }
  
  if (!file.exists(lr_pos_sem_file)) {
    stop(paste("Missing data file:", lr_pos_sem_file))
  }
 
- # Load lr_pos_sem data
- lr_pos_sem <- read_csv(lr_pos_sem_file, show_col_types = FALSE)
+ # Load lr_pos_sem data with explicit UTF-8 encoding for German umlauts
+ lr_pos_sem <- read_csv(lr_pos_sem_file, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
  
  # Transform to app format - map column names
  word_associations <- lr_pos_sem %>%
@@ -94,17 +108,14 @@ load_real_data <- function(data_dir = DATA_DIR) {
  df_exp_left <- NULL
  df_exp_right <- NULL
  
- df_exp_left_file <- file.path(data_dir, "df_exp_left.csv")
- df_exp_right_file <- file.path(data_dir, "df_exp_right.csv")
- 
  if (file.exists(df_exp_left_file)) {
-   df_exp_left <- read_csv(df_exp_left_file, show_col_types = FALSE)
-   message(paste("Loaded", nrow(df_exp_left), "left association records"))
+   df_exp_left <- read_csv(df_exp_left_file, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
+   if (verbose) message(paste("Loaded", nrow(df_exp_left), "left association records"))
  }
- 
+
  if (file.exists(df_exp_right_file)) {
-   df_exp_right <- read_csv(df_exp_right_file, show_col_types = FALSE)
-   message(paste("Loaded", nrow(df_exp_right), "right association records"))
+   df_exp_right <- read_csv(df_exp_right_file, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
+   if (verbose) message(paste("Loaded", nrow(df_exp_right), "right association records"))
  }
 
  data <- list(
@@ -138,9 +149,9 @@ enrich_data <- function(data) {
      quadrant_label = quadrant_labels[quadrant],
      # Display label combining German and English
      display_label = paste0(word, " (", word_en, ")"),
-     # Tooltip text
+     # Tooltip text - use HTML encoding to preserve German umlauts
      tooltip_text = paste0(
-       "<b>", word_en, "</b> (", word, ")<br>",
+       "<b>", htmlEscape(word_en), "</b> (", htmlEscape(word), ")<br>",
        "Position: ", round(lr_position_mean, 2), "<br>",
        "Semantic: ", round(semantic_score, 2), "<br>",
        "Total Freq: ", frequency, "<br>",
