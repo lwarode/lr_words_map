@@ -116,7 +116,7 @@ create_plotly_scatter_plot <- function(data,
     width = NULL,
     dragmode = 'zoom',
     hovermode = 'closest',
-    font = list(family = "Arial, Helvetica, sans-serif", size = 12)
+    font = list(family = "Arial, Helvetica, sans-serif", size = 16)
   )
 
   p <- p %>% config(
@@ -166,7 +166,7 @@ SEMANTIC_COLORS <- c(
 # Theme Academia (clean sans-serif theme)
 # ------------------------------------------------------------------------------
 
-theme_academia <- function(base_size = 12) {
+theme_academia <- function(base_size = 16) {
   
   # Use sans-serif (cross-platform compatible)
   font <- "sans"
@@ -174,7 +174,7 @@ theme_academia <- function(base_size = 12) {
   theme_bw(base_size = base_size) %+replace%
     theme(
       text = element_text(family = font),
-      legend.text = element_text(size = 9),
+      legend.text = element_text(size = 12),
       legend.title = element_blank(),
       legend.box.background = element_rect(colour = "black", fill = "white", linetype = "solid"),
       
@@ -193,9 +193,9 @@ theme_academia <- function(base_size = 12) {
         vjust = 1
       ),
       
-      # Axis
-      axis.title = element_text(size = rel(0.95)),
-      axis.text = element_text(size = rel(0.9)),
+      # Axis - increased sizes for better readability on shinyapps.io
+      axis.title = element_text(size = rel(1.0)),
+      axis.text = element_text(size = rel(0.95)),
       
       # Plot
       plot.title = element_text(size = rel(1.1), face = "bold", hjust = 0),
@@ -302,6 +302,10 @@ create_scatter_plot <- function(data,
     customdata = word
   )) +
     theme_academia() +
+    theme(
+      axis.title = element_text(size = 14),
+      axis.text = element_text(size = 12)
+    ) +
     labs(
       x = "Left-Right Self-Placement (Mean)",
       y = "Left-Right Semantic Association Score (Left: -1, Right: +1)"
@@ -337,7 +341,7 @@ create_scatter_plot <- function(data,
       geom_text_repel(
         aes(alpha = ifelse(is_highlighted, 1, 0.3)),
         family = "sans",
-        size = 3.2,
+        size = 5,
         max.overlaps = 40,
         max.time = 3,
         show.legend = FALSE,
@@ -392,24 +396,24 @@ create_interactive_scatter <- function(ggplot_obj) {
       hovermode = "closest",
       showlegend = FALSE,
       autosize = TRUE,
-      font = list(family = "Arial, Helvetica, sans-serif", size = 12),
+      font = list(family = "Arial, Helvetica, sans-serif", size = 16),
       xaxis = list(
         range = c(2, 8),
         autorange = FALSE,
         fixedrange = FALSE,
-        tickfont = list(family = "Arial, Helvetica, sans-serif", size = 11),
-        titlefont = list(family = "Arial, Helvetica, sans-serif", size = 12)
+        tickfont = list(family = "Arial, Helvetica, sans-serif", size = 14),
+        titlefont = list(family = "Arial, Helvetica, sans-serif", size = 16)
       ),
       yaxis = list(
         range = c(-1.1, 1.1),
         autorange = FALSE,
         fixedrange = FALSE,
-        tickfont = list(family = "Arial, Helvetica, sans-serif", size = 11),
-        titlefont = list(family = "Arial, Helvetica, sans-serif", size = 12)
+        tickfont = list(family = "Arial, Helvetica, sans-serif", size = 14),
+        titlefont = list(family = "Arial, Helvetica, sans-serif", size = 16)
       ),
       hoverlabel = list(
         bgcolor = "white",
-        font = list(family = "Arial, Helvetica, sans-serif", size = 12)
+        font = list(family = "Arial, Helvetica, sans-serif", size = 14)
       )
     ) %>%
     config(
@@ -472,12 +476,16 @@ create_interactive_scatter <- function(ggplot_obj) {
 # - neutral terms: show BOTH distributions
 # ------------------------------------------------------------------------------
 
-create_distribution_plot <- function(word_info, data) {
+create_distribution_plot <- function(word_info, data, font_scale = 1) {
+  if (is.null(font_scale) || is.na(font_scale) || font_scale <= 0) {
+    font_scale <- 1
+  }
+  scale_size <- function(x) x * font_scale
 
   if (is.null(word_info) || nrow(word_info) == 0) {
-    return(create_empty_plot("Select a word to view distribution"))
+    return(create_empty_plot("Select a word to view distribution", font_scale = font_scale))
   }
-  
+
   info <- word_info
   lr_semantic <- info$lr_semantic
   the_word <- info$word
@@ -529,24 +537,32 @@ create_distribution_plot <- function(word_info, data) {
   }
   
   if (nrow(indiv_data) == 0) {
-    return(create_empty_plot("No distribution data available"))
+    return(create_empty_plot("No distribution data available", font_scale = font_scale))
   }
   
   # Create density plot (Figure 7 style)
+  # Use legend at bottom for better mobile display
   p <- ggplot(indiv_data, aes(x = lr_self, fill = association)) +
     geom_density(alpha = 0.35, color = NA) +
     scale_fill_manual(
-      name = "Association\nwith:",
+      name = "Association:",
       values = c("Left" = "#E30019", "Right" = "#4285F4")
     ) +
     scale_x_continuous(breaks = seq(1, 11, 1), limits = c(1, 11)) +
-    theme_academia() +
+    theme_academia(base_size = scale_size(14)) +
     theme(
       axis.ticks.y = element_blank(),
       axis.text.y = element_blank(),
-      legend.title = element_text(size = 9),
-      plot.title = element_text(size = 14, margin = margin(b = 15)),
-      legend.position = "right"
+      legend.title = element_text(size = scale_size(11)),
+      legend.text = element_text(size = scale_size(10)),
+      plot.title = element_text(size = scale_size(13), face = "bold", margin = margin(b = 6)),
+      axis.title = element_text(size = scale_size(11)),
+      axis.text = element_text(size = scale_size(10)),
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.box.background = element_blank(),
+      legend.margin = margin(t = 0, b = 0),
+      plot.margin = margin(t = 5, r = 10, b = 5, l = 5)
     ) +
     labs(
       title = title_term,
@@ -560,38 +576,63 @@ create_distribution_plot <- function(word_info, data) {
   max_density <- max(plot_build$data[[1]]$y, na.rm = TRUE)
   
   # Add mean lines and annotations for ALL distributions
+  # hjust logic: for values near left edge, place text to the RIGHT (hjust = -0.1)
+  #              for values near right edge, place text to the LEFT (hjust = 1.1)
+  #              when both distributions exist, place them on opposite sides to avoid overlap
   if (show_left && !is.na(left_mean)) {
-    p <- p + 
-      geom_vline(xintercept = left_mean, linetype = 2, color = "#E30019", linewidth = 0.8) +
+    # For left-leaning (low values), place annotation to the right of line
+    # For right-leaning (high values), place annotation to the left of line
+    left_hjust <- if (left_mean <= 4) {
+      -0.1  # Place text to the right of the line
+    } else if (left_mean >= 8) {
+      1.1   # Place text to the left of the line
+    } else if (!is.na(right_mean) && left_mean < right_mean) {
+      1.1   # If there's a right mean to the right, place this one left
+    } else {
+      -0.1
+    }
+    p <- p +
+      geom_vline(xintercept = left_mean, linetype = 2, color = "#E30019", linewidth = 0.7) +
       annotate(
         geom = "text",
         family = "sans",
         x = left_mean,
-        y = max_density * 0.05,
+        y = max_density * 0.08,
         label = paste0("bar(x) == ", round(left_mean, 2)),
         parse = TRUE,
         color = "#E30019",
-        size = 3.5,
-        hjust = ifelse(!is.na(right_mean) && left_mean < right_mean, 1.1, -0.1)
+        size = scale_size(3.5),
+        hjust = left_hjust
       )
   }
-  
+
   if (show_right && !is.na(right_mean)) {
-    p <- p + 
-      geom_vline(xintercept = right_mean, linetype = 2, color = "#4285F4", linewidth = 0.8) +
+    # For left-leaning (low values), place annotation to the right of line
+    # For right-leaning (high values), place annotation to the left of line
+    right_hjust <- if (right_mean <= 4) {
+      -0.1  # Place text to the right of the line
+    } else if (right_mean >= 8) {
+      1.1   # Place text to the left of the line
+    } else if (!is.na(left_mean) && right_mean > left_mean) {
+      -0.1  # If there's a left mean to the left, place this one right
+    } else {
+      1.1
+    }
+    p <- p +
+      geom_vline(xintercept = right_mean, linetype = 2, color = "#4285F4", linewidth = 0.7) +
       annotate(
         geom = "text",
         family = "sans",
         x = right_mean,
-        y = max_density * 0.05,
+        y = max_density * 0.08,
         label = paste0("bar(x) == ", round(right_mean, 2)),
         parse = TRUE,
         color = "#4285F4",
-        size = 3.5,
-        hjust = ifelse(!is.na(left_mean) && right_mean > left_mean, -0.1, 1.1)
+        size = scale_size(3.5),
+        hjust = right_hjust
       )
   }
-  
+
   # Add distance segment for neutral terms (both distributions)
   if (lr_semantic == "neutral" && !is.na(left_mean) && !is.na(right_mean)) {
     p <- p +
@@ -612,7 +653,7 @@ create_distribution_plot <- function(word_info, data) {
         y = max_density * 0.95,
         label = paste0("Dist.: ", round(abs(left_mean - right_mean), 2)),
         color = "black",
-        size = 3.5
+        size = scale_size(3.5)
       )
   }
 
@@ -623,14 +664,17 @@ create_distribution_plot <- function(word_info, data) {
 # Empty Plot Placeholder
 # ------------------------------------------------------------------------------
 
-create_empty_plot <- function(message = "Select a word to view details") {
+create_empty_plot <- function(message = "Select a word to view details", font_scale = 1) {
+  if (is.null(font_scale) || is.na(font_scale) || font_scale <= 0) {
+    font_scale <- 1
+  }
 
   ggplot() +
     annotate(
       "text",
       x = 0.5, y = 0.5,
       label = message,
-      size = 5,
+      size = 5 * font_scale,
       color = "#9E9E9E",
       fontface = "italic",
       family = "sans"
@@ -664,8 +708,12 @@ save_plot_png <- function(plot, filename, width = 9, height = 9, dpi = 300) {
 # Shows the 2x2 quadrant structure with highlighted active quadrant
 # ------------------------------------------------------------------------------
 
-create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
-  
+create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9, font_scale = 1) {
+  if (is.null(font_scale) || is.na(font_scale) || font_scale <= 0) {
+    font_scale <- 1
+  }
+  scale_size <- function(x) x * font_scale
+
   # Define quadrant data
   # Y-axis: Semantic Association (Right at top, Left at bottom)
   # X-axis: Political Position (Left on left, Right on right)
@@ -772,10 +820,10 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
       linewidth = 2
     ) +
     scale_fill_identity() +
-    # Quadrant labels - smaller text to fit inside boxes
+    # Quadrant labels - text inside boxes (reduced sizes for mobile)
     geom_text(
       aes(x = label_x, y = label_y, label = label, color = text_color),
-      size = 3.2,
+      size = scale_size(3.8),
       fontface = "bold",
       family = "sans",
       lineheight = 0.85
@@ -783,45 +831,45 @@ create_quadrant_diagram <- function(word_info = NULL, global_mean = 4.9) {
     scale_color_identity() +
     # Axis labels using annotate (Y-axis: Right at top, Left at bottom)
     # Position labels closer to boxes - minimal padding
-    annotate("text", x = 0.5, y = -0.12, label = "Left", size = 2.8, family = "sans", color = "#5F6368") +
-    annotate("text", x = 1.5, y = -0.12, label = "Right", size = 2.8, family = "sans", color = "#5F6368") +
-    annotate("text", x = 1, y = -0.30, label = "Political Position", size = 3, family = "sans", fontface = "bold", color = "#5F6368") +
-    annotate("text", x = -0.12, y = 0.5, label = "Left", size = 2.8, family = "sans", color = "#5F6368", angle = 90) +
-    annotate("text", x = -0.12, y = 1.5, label = "Right", size = 2.8, family = "sans", color = "#5F6368", angle = 90) +
-    annotate("text", x = -0.30, y = 1, label = "Semantic\nAssociation", size = 3, family = "sans", fontface = "bold", color = "#5F6368", angle = 90, lineheight = 0.85) +
+    annotate("text", x = 0.5, y = -0.10, label = "Left", size = scale_size(3.5), family = "sans", color = "#5F6368") +
+    annotate("text", x = 1.5, y = -0.10, label = "Right", size = scale_size(3.5), family = "sans", color = "#5F6368") +
+    annotate("text", x = 1, y = -0.32, label = "Political Position", size = scale_size(3.8), family = "sans", fontface = "bold", color = "#5F6368") +
+    annotate("text", x = -0.10, y = 0.5, label = "Left", size = scale_size(3.5), family = "sans", color = "#5F6368", angle = 90) +
+    annotate("text", x = -0.10, y = 1.5, label = "Right", size = scale_size(3.5), family = "sans", color = "#5F6368", angle = 90) +
+    annotate("text", x = -0.34, y = 1, label = "Semantic\nAssociation", size = scale_size(3.8), family = "sans", fontface = "bold", color = "#5F6368", angle = 90, lineheight = 0.85) +
     # Reference lines (center cross) using annotate
     annotate("segment", x = 0, xend = 2, y = 1, yend = 1, color = "white", linewidth = 1.5) +
     annotate("segment", x = 1, xend = 1, y = 0, yend = 2, color = "white", linewidth = 1.5) +
     # In-ideology (+) and Out-ideology (-) indicators in quadrant corners
     # In-ideology: bottom-left (left) and top-right (right) = positive alignment
-    annotate("text", x = 0.12, y = 0.12, label = "+", size = 4, family = "sans", fontface = "bold", color = "#666666") +
-    annotate("text", x = 1.88, y = 1.88, label = "+", size = 4, family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 0.14, y = 0.14, label = "+", size = scale_size(4), family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 1.86, y = 1.86, label = "+", size = scale_size(4), family = "sans", fontface = "bold", color = "#666666") +
     # Out-ideology: top-left (right semantic, left position) and bottom-right (left semantic, right position) = negative framing
-    annotate("text", x = 0.12, y = 1.88, label = "\u2212", size = 4, family = "sans", fontface = "bold", color = "#666666") +
-    annotate("text", x = 1.88, y = 0.12, label = "\u2212", size = 4, family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 0.14, y = 1.86, label = "\u2212", size = scale_size(4), family = "sans", fontface = "bold", color = "#666666") +
+    annotate("text", x = 1.86, y = 0.14, label = "\u2212", size = scale_size(4), family = "sans", fontface = "bold", color = "#666666") +
     # Theme and coordinates - tight bounds, shifted slightly left
-    coord_cartesian(xlim = c(-0.45, 2.15), ylim = c(-0.45, 2.05), clip = "off") +
+    coord_cartesian(xlim = c(-0.40, 2.05), ylim = c(-0.55, 2.05), clip = "off") +
     theme_void() +
     theme(
       plot.background = element_rect(fill = "white", color = NA),
       panel.background = element_rect(fill = "white", color = NA),
-      plot.margin = margin(2, 15, 2, 2)  # More right margin to push content left
+      plot.margin = margin(2, 8, 8, 2)  # Extra bottom space for ambiguity note
     )
-  
+
   # Add "NEUTRAL" indicator if neutral word (bold and prominent)
   if (is_neutral && !no_selection) {
     p <- p +
-      annotate("label", x = 1, y = 1, label = "NEUTRAL", size = 6, 
+      annotate("label", x = 1, y = 1, label = "NEUTRAL", size = scale_size(4.2),
                family = "sans", fontface = "bold", color = "#424242",
                fill = "white", label.size = 0, label.padding = unit(0.4, "lines"))
   }
-  
+
   # Add warning for positionally ambiguous cases
   if (is_ambiguous && !no_selection) {
     p <- p +
-      annotate("text", x = 1, y = -0.50,
+      annotate("text", x = 1, y = -0.52,
                label = "Position near center \u2013 ambiguous",
-               size = 3.2, family = "sans", fontface = "italic", color = "#B45309")
+               size = scale_size(3.5), family = "sans", fontface = "italic", color = "#B45309")
   }
   
   return(p)
