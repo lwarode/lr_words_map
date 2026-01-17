@@ -47,7 +47,7 @@ wordDetailsUI <- function(id) {
       ),
       div(
         style = "padding: 0.5rem;",
-        add_spinner(plotOutput(ns("distribution_plot"), height = "280px"), type = 6, color = "#5F6368", size = 0.5)
+        add_spinner(plotOutput(ns("distribution_plot"), height = "320px"), type = 6, color = "#5F6368", size = 0.5)
       )
     ),
     
@@ -62,8 +62,8 @@ wordDetailsUI <- function(id) {
         class = "text-center",
         style = "padding: 0.75rem;",
         div(
-          style = "display: inline-block; width: 100%; max-width: 350px;",
-          plotOutput(ns("quadrant_diagram"), height = "280px", width = "100%")
+          style = "display: inline-block; width: 100%; max-width: 400px;",
+          plotOutput(ns("quadrant_diagram"), height = "320px", width = "100%")
         )
       ),
       div(
@@ -87,6 +87,9 @@ wordDetailsUI <- function(id) {
 
 wordDetailsServer <- function(id, data, selected_word) {
   moduleServer(id, function(input, output, session) {
+    font_scale_for <- function(output_id) {
+      1
+    }
 
     # Reactive: Get word info (handles NULL and empty string)
     word_info <- reactive({
@@ -209,22 +212,42 @@ wordDetailsServer <- function(id, data, selected_word) {
 
     # Render distribution plot
     output$distribution_plot <- renderPlot({
+      # Disable showtext for UI rendering to avoid DPI issues on shinyapps.io
+      # Downloads still use showtext with correct DPI
+      if (requireNamespace("showtext", quietly = TRUE)) {
+        showtext_was_on <- showtext::showtext_auto()
+        showtext::showtext_auto(enable = FALSE)
+        on.exit(showtext::showtext_auto(enable = showtext_was_on), add = TRUE)
+      }
+
+      font_scale <- font_scale_for("distribution_plot")
+
       sw <- selected_word()
       if (is.null(sw) || sw == "") {
-        return(create_empty_plot("Select a word to view distribution"))
+        return(create_empty_plot("Select a word to view distribution", font_scale = font_scale))
       }
 
       info <- word_info()
-      
+
       if (is.null(info) || nrow(info) == 0) {
-        return(create_empty_plot("No data available"))
+        return(create_empty_plot("No data available", font_scale = font_scale))
       }
 
-      create_distribution_plot(info, data())
+      create_distribution_plot(info, data(), font_scale = font_scale)
     }, res = 96)
-    
+
     # Render quadrant diagram
     output$quadrant_diagram <- renderPlot({
+      # Disable showtext for UI rendering to avoid DPI issues on shinyapps.io
+      # Downloads still use showtext with correct DPI
+      if (requireNamespace("showtext", quietly = TRUE)) {
+        showtext_was_on <- showtext::showtext_auto()
+        showtext::showtext_auto(enable = FALSE)
+        on.exit(showtext::showtext_auto(enable = showtext_was_on), add = TRUE)
+      }
+
+      font_scale <- font_scale_for("quadrant_diagram")
+
       info <- word_info()
       # Get global mean from data for accurate positional comparison
       global_mean <- if (!is.null(data()) && !is.null(data()$global_stats)) {
@@ -232,19 +255,28 @@ wordDetailsServer <- function(id, data, selected_word) {
       } else {
         4.9  # Fallback default
       }
-      create_quadrant_diagram(info, global_mean = global_mean)
+      create_quadrant_diagram(info, global_mean = global_mean, font_scale = font_scale)
     }, res = 96)
     
     # Download handler for distribution plot
     output$download_dist <- downloadHandler(
       filename = function() {
-        word <- if (!is.null(selected_word())) selected_word() else "distribution"
-        paste0("distribution_", word, "_", Sys.Date(), ".png")
+        info <- word_info()
+        if (!is.null(info) && nrow(info) > 0 && !is.na(info$word_en[1])) {
+          word_en <- tolower(gsub("[^a-zA-Z0-9]", "_", info$word_en[1]))
+          return(paste0("distribution_", word_en, "_", Sys.Date(), ".png"))
+        }
+        paste0("distribution_", Sys.Date(), ".png")
       },
       content = function(file) {
         info <- word_info()
         if (!is.null(info) && nrow(info) > 0) {
           p <- create_distribution_plot(info, data())
+          old_dpi <- getOption("showtext.dpi", 96)
+          if (requireNamespace("showtext", quietly = TRUE)) {
+            showtext::showtext_opts(dpi = 300)
+            on.exit(showtext::showtext_opts(dpi = old_dpi), add = TRUE)
+          }
           ggsave(
             file,
             plot = p,
