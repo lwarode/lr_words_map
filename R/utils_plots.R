@@ -503,32 +503,44 @@ create_distribution_plot <- function(word_info, data, font_scale = 1) {
   
   # Build individual-level data for density plot
   indiv_data <- data.frame()
-  left_mean <- NA
-  right_mean <- NA
-  
-  # Get left distribution data
+
+
+  # Use pre-computed means from word_info (lr_pos_sem_curated) for consistency
+
+  # with main plot and UI display
+  left_mean <- if ("lr_self_mean_left" %in% names(info) && !is.na(info$lr_self_mean_left)) {
+    info$lr_self_mean_left
+  } else {
+    NA
+
+  }
+  right_mean <- if ("lr_self_mean_right" %in% names(info) && !is.na(info$lr_self_mean_right)) {
+    info$lr_self_mean_right
+  } else {
+    NA
+  }
+
+  # Get left distribution data (for density visualization only)
   if (show_left && !is.null(df_exp_left)) {
     left_individuals <- df_exp_left %>%
       filter(left_words == the_word) %>%
       filter(!is.na(lr_self))
-    
+
     if (nrow(left_individuals) > 0) {
-      left_mean <- mean(left_individuals$lr_self, na.rm = TRUE)
       indiv_data <- rbind(indiv_data, data.frame(
         lr_self = left_individuals$lr_self,
         association = "Left"
       ))
     }
   }
-  
-  # Get right distribution data  
+
+  # Get right distribution data (for density visualization only)
   if (show_right && !is.null(df_exp_right)) {
     right_individuals <- df_exp_right %>%
       filter(right_words == the_word) %>%
       filter(!is.na(lr_self))
-    
+
     if (nrow(right_individuals) > 0) {
-      right_mean <- mean(right_individuals$lr_self, na.rm = TRUE)
       indiv_data <- rbind(indiv_data, data.frame(
         lr_self = right_individuals$lr_self,
         association = "Right"
