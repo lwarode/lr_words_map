@@ -199,6 +199,29 @@ Main dataset for the scatter plot.
 
 **Quadrant values:** `"in_left"`, `"out_left"`, `"in_right"`, `"out_right"`, `"center"`
 
+### Understanding Mean Values
+
+The app displays different mean values in different contexts. This is intentional and reflects the underlying data structure:
+
+| Display Location | Value Used | Description |
+|-----------------|------------|-------------|
+| **Main Scatter Plot (X-axis)** | `lr_self_mean` | Weighted mean across ALL respondents who used the word |
+| **UI "Position (Mean)"** | `lr_self_mean` | Same as scatter plot - overall weighted position |
+| **Distribution Plot Annotation** | `lr_self_mean_left` or `lr_self_mean_right` | Mean of the SPECIFIC distribution being shown |
+
+**Example:** For "social (sozial)":
+- UI shows **Position: 3.37** (weighted mean of all 741 respondents)
+- Distribution plot shows **x̄ = 3.29** (mean of the 659 LEFT-association respondents only)
+
+This distinction exists because:
+1. The **scatter plot position** represents where the word sits in the ideological space based on ALL people who use it
+2. The **distribution plot** shows only the relevant distribution (left OR right) based on the word's semantic classification, so its annotation reflects that specific subset
+
+The values come from `lr_pos_sem_curated.csv`:
+- `lr_self_mean_left`: Mean position of people who associated this word with "left"
+- `lr_self_mean_right`: Mean position of people who associated this word with "right"
+- `lr_self_mean`: Weighted combination used for the main plot's x-axis position
+
 #### 2. `data/position_distributions.csv`
 
 Distribution data for the detail panel.
