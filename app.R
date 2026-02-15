@@ -35,9 +35,13 @@ library(htmltools)
 library(showtext)
 library(sysfonts)
 
-# Load Source Sans Pro font for UI elements
-font_add_google("Source Sans Pro", "sourcesans")
-showtext_auto()
+# Load Source Sans Pro font for UI elements (with error handling for shinyapps.io)
+tryCatch({
+  font_add_google("Source Sans Pro", "sourcesans")
+  showtext_auto()
+}, error = function(e) {
+  message("Could not load Google Font via showtext (using CSS fallback): ", e$message)
+})
 
 # Optional: shinycssloaders for loading spinners
 HAS_SPINNERS <- requireNamespace("shinycssloaders", quietly = TRUE)
@@ -85,7 +89,8 @@ ui <- page_fluid(
     base_font = font_google("Source Sans Pro"),
     heading_font = font_google("Source Sans Pro"),
     font_scale = 0.95
- ),
+  ),
+  title = "Mapping Left-Right Associations",
 
  # Custom CSS
  tags$head(
@@ -190,7 +195,9 @@ ui <- page_fluid(
          HTML(paste0(
            "This visualization maps how political words are associated with 'left' and 'right' based on open-ended survey responses from German electoral candidates (2013\u20132021). ",
            "Each point represents a <strong>word association</strong>, not an individual person \u2013 positioned by the average left-right self-placement of respondents who mentioned it. ",
-           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations."
+           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations.",
+           "<br><br>",
+           "The panel next to the main figure summarizes each selected word. Position (mean) shows the average left-right self-placement of candidates who used it. The semantic score indicates how left (-1) or right (+1) the word is used. The frequency below shows how often it appeared (left, right, total). The left-right self-placement distribution below is based on individual candidates who used the word and is separated by those who associated it with the left or right."
          ))
        )
      ),
@@ -205,7 +212,9 @@ ui <- page_fluid(
          HTML(paste0(
            "This visualization maps how political words are associated with 'left' and 'right' based on open-ended survey responses from German electoral candidates (2013\u20132021). ",
            "Each point represents a <strong>word association</strong>, not an individual person \u2013 positioned by the average left-right self-placement of respondents who mentioned it. ",
-           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations."
+           "Words in the <span style='color: #E30019;'>lower-left</span> and <span style='color: #4285F4;'>upper-right</span> quadrants reflect <em>in-ideological</em> associations (alignment with one's political side), while the opposite quadrants show <em>out-ideological</em> associations.",
+           "<br><br>",
+           "The panel next to the main figure summarizes each selected word. Position (mean) shows the average left-right self-placement of candidates who used it. The semantic score indicates how left (-1) or right (+1) the word is used. The frequency below shows how often it appeared (left, right, total). The left-right self-placement distribution below is based on individual candidates who used the word and is separated by those who associated it with the left or right."
          ))
        )
      )
